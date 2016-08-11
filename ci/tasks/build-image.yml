@@ -6,4 +6,4 @@ image_resource:
 inputs:
   - name: code-repo
 run:
-  path: code-repo/scripts/test
+  path: code-repo/ci/scripts/build-image.sh
