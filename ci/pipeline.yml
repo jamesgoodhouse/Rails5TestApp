@@ -1,5 +1,5 @@
 resources:
-  - name: git-repository
+  - name: code-repo
     type: git
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
@@ -7,6 +7,7 @@ resources:
 jobs:
   - name: build image
     plan:
-      - get: git-repository
+      - get: code-repo
+        trigger: true
       - task: build image
-        file: ci/tasks/build-image.yml
+        file: code-repo/ci/tasks/build-image.yml
