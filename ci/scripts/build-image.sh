@@ -4,20 +4,22 @@
 
 start_docker
 
-docker load -i ruby-dev-image/image
-docker tag "$(cat ruby-dev-image/image-id)" "$(cat ruby-dev-image/repository):$(cat ruby-dev-image/tag)"
-
 docker load -i ruby-image/image
 docker tag "$(cat ruby-image/image-id)" "$(cat ruby-image/repository):$(cat ruby-image/tag)"
 
-echo -----------
+cd project-code
+
+docker build -t jamgood96/rails5testapp:latest .
+
+cd ..
+
+mkdir -p project-image-tar
+
+docker save jamgood96/rails5testapp:latest > project-image-tar/image.tar
+
+echo `ls -la`
+echo `ls -la project-image-tar`
+
+echo `pwd`
+
 echo `docker images`
-echo -----------
-
-cd code-repo
-
-docker run --rm -v "$PWD":/worker -w /worker iron/ruby:dev sh -c 'bundle config --local build.nokogiri --use-system-libraries && bundle install --standalone --clean'
-
-docker build . taco_tuesday
-
-echo $(docker ps -a)

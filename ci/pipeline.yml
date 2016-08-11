@@ -1,28 +1,42 @@
 resources:
-  - name: code-repo
+  - name: project-code
     type: git
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
-  - name: ruby-dev-image
-    type: docker-image
-    source:
-      repository: iron/ruby
-      tag: dev
   - name: ruby-image
     type: docker-image
     source:
-      repository: iron/ruby
+      repository: ruby
+      tag: "2.3-alpine"
+  - name: project-image
+    type: docker-image
+    source:
+      repository: jamgood96/rails5testapp
+      username: jamgood96
+      password: {{docker-hub-password}}
 jobs:
-  - name: build image
+  - name: build-and-test
     plan:
       - aggregate:
-        - get: code-repo
+        - get: project-code
           trigger: true
-        - get: ruby-dev-image
-          params: {save: true}
         - get: ruby-image
           params: {save: true}
-      - task: build image
+      - task: build-image
         privileged: true
-        file: code-repo/ci/tasks/build-image.yml
+        file: project-code/ci/tasks/build-image.yml
+      - aggregate:
+        - task: rspec
+          privileged: true
+          file: project-code/ci/tasks/run-tests-rspec.yml
+        - task: cucumber
+          privileged: true
+          file: project-code/ci/tasks/run-tests-cucumber.yml
+      - put: project-image
+        params:
+          import_file: project-image-tar/image.tar
+  # - name: things-and-stuff
+  #   plan:
+  #     - get: project-image
+  #       passed: [build-and-test]

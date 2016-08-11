@@ -5,8 +5,6 @@ image_resource:
     repository: mumoshu/dcind
 inputs:
   - name: project-code
-  - name: ruby-image
-outputs:
   - name: project-image-tar
 run:
-  path: project-code/ci/scripts/build-image.sh
+  path: project-code/ci/scripts/run-tests-rspec.sh
