@@ -5,7 +5,10 @@
 start_docker
 
 docker load -i ruby-dev-image/image
+docker tag "$(cat ruby-dev-image/image-id)" "$(cat ruby-dev-image/repository):$(cat ruby-dev-image/tag)"
+
 docker load -i ruby-image/image
+docker tag "$(cat ruby-image/image-id)" "$(cat ruby-image/repository):$(cat ruby-image/tag)"
 
 echo -----------
 echo `docker images`
