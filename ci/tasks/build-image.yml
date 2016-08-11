@@ -2,7 +2,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: mumoshu/dcind
+    repository: docker
+    tag: dind
 inputs:
   - name: code-repo
 run:
