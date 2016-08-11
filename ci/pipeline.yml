@@ -4,11 +4,25 @@ resources:
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
+  - name: ruby-dev-image
+    type: docker-image
+    source:
+      repository: iron/ruby
+      tag: dev
+  - name: ruby-image
+    type: docker-image
+    source:
+      repository: iron/ruby
 jobs:
   - name: build image
     plan:
-      - get: code-repo
-        trigger: true
+      - aggregate:
+        - get: code-repo
+          trigger: true
+        - get: ruby-dev-image
+          params: {save: true}
+        - get: ruby-image
+          params: {save: true}
       - task: build image
-        file: code-repo/ci/tasks/build-image.yml
         privileged: true
+        file: code-repo/ci/tasks/build-image.yml

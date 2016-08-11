@@ -4,6 +4,8 @@ image_resource:
   source:
     repository: mumoshu/dcind
 inputs:
+  - name: ruby-dev-image
+  - name: ruby-image
   - name: code-repo
 run:
   path: code-repo/ci/scripts/build-image.sh

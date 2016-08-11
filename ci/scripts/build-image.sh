@@ -4,7 +4,14 @@
 
 start_docker
 
-cd /code-repo
+docker load -i ruby-dev-image/image
+docker load -i ruby-image/image
+
+echo -----------
+echo `docker images`
+echo -----------
+
+cd code-repo
 
 docker run --rm -v "$PWD":/worker -w /worker iron/ruby:dev sh -c 'bundle config --local build.nokogiri --use-system-libraries && bundle install --standalone --clean'
 
