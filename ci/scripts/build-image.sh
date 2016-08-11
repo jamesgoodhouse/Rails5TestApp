@@ -4,6 +4,8 @@
 
 start_docker
 
+cd /code-repo
+
 docker run --rm -v "$PWD":/worker -w /worker iron/ruby:dev sh -c 'bundle config --local build.nokogiri --use-system-libraries && bundle install --standalone --clean'
 
 docker build . taco_tuesday
