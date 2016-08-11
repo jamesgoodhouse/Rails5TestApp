@@ -11,3 +11,4 @@ jobs:
         trigger: true
       - task: build image
         file: code-repo/ci/tasks/build-image.yml
+        privileged: true
