@@ -1,0 +1,12 @@
+resources:
+  - name: git-repository
+    type: git
+    source:
+      uri: https://github.com/jamesgoodhouse/Rails5TestApp
+      branch: master
+jobs:
+  - name: build image
+    plan:
+      - get: git-repository
+      - task: build image
+        file: ci/tasks/build-image.yml
