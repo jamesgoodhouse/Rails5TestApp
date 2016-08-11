@@ -4,6 +4,6 @@ image_resource:
   source:
     repository: docker/docker
 inputs:
-  - name: my-app
+  - name: code-repo
 run:
-  path: my-app/scripts/test
+  path: code-repo/scripts/test
