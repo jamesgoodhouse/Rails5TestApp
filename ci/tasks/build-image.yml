@@ -1,0 +1,9 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: docker/docker
+inputs:
+  - name: my-app
+run:
+  path: my-app/scripts/test
