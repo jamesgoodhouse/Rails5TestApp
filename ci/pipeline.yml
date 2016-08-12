@@ -1,51 +1,137 @@
+resource_types:
+  - name: rsync-resource
+    type: docker-image
+    source:
+      repository: mrsixw/concourse-rsync-resource
+      tag: latest
+
 resources:
   - name: project-code
     type: git
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
-  - name: project-bundle
-    type: git
-    source:
-      uri: https://github.com/jamesgoodhouse/Rails5TestApp-bundle
-      branch: master
+  # - name: project-bundle
+  #   type: git
+  #   source:
+  #     uri: https://github.com/jamesgoodhouse/Rails5TestApp-bundle
+  #     branch: master
+
   - name: ruby-2.3.1-image
     type: docker-image
     source:
       repository: jamgood96/ruby
       tag: "2.3.1"
+
   - name: project-image
     type: docker-image
     source:
       repository: jamgood96/rails5testapp
       username: jamgood96
       password: {{docker-hub-password}}
+
+  - name: bundled-gems
+    type: rsync-resource
+    source:
+      server: 10.40.1.190
+      port: 2222
+      base_dir: /sync_directory
+      user : root
+      private_key: {{private_key}}
+
 jobs:
   - name: build-and-test
     plan:
       - aggregate:
         - get: project-code
           trigger: true
-        - get: project-bundle
-          params: {save: true}
+        - get: bundled-gems
         - get: ruby-2.3.1-image
           params: {save: true}
+
       - task: bundle-gems
-        file: project-code/ci/tasks/bundle-gems.yml
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: jamgood96/ruby
+              tag: "2.3.1-dev"
+          inputs:
+            - name: bundled-gems
+            - name: project-code
+          run:
+            path: ./project-code/ci/scripts/bundle-gems.sh
+
+      - put: bundled-gems
+
+      - task: compile-assets
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: jamgood96/ruby
+              tag: "2.3.1-dev"
+          inputs:
+            - name: bundled-gems
+            - name: project-code
+          outputs: [name: compiled-assets]
+          run:
+            dir: project-code
+            path: ./ci/scripts/compile-assets.sh
+
       - task: build-image
         privileged: true
-        file: project-code/ci/tasks/build-image.yml
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: mumoshu/dcind
+          inputs:
+            - name: bundled-gems
+            - name: compiled-assets
+            - name: project-code
+            - name: ruby-2.3.1-image
+          outputs: [name: project-image-tar]
+          run:
+            path: ./project-code/ci/scripts/build-image.sh
+
       - aggregate:
         - task: rspec
           privileged: true
-          file: project-code/ci/tasks/run-tests-rspec.yml
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: mumoshu/dcind
+            inputs:
+              - name: project-code
+              - name: project-image-tar
+            run:
+              path: project-code/ci/scripts/run-tests-rspec.sh
         - task: cucumber
           privileged: true
-          file: project-code/ci/tasks/run-tests-cucumber.yml
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: mumoshu/dcind
+            inputs:
+              - name: project-code
+              - name: project-image-tar
+            run:
+              path: project-code/ci/scripts/run-tests-cucumber.sh
+
       - put: project-image
         params:
-          import_file: project-image-tar/image.tar
-  # - name: things-and-stuff
-  #   plan:
-  #     - get: project-image
-  #       passed: [build-and-test]
+          load_file: project-image-tar/image.tar
+          load_repository: jamgood96/rails5testapp
+          load_tag: latest
+  # # - name: things-and-stuff
+  # #   plan:
+  # #     - get: project-image
+  # #       passed: [build-and-test]
