@@ -5,7 +5,8 @@ image_resource:
     repository: mumoshu/dcind
 inputs:
   - name: project-code
-  - name: ruby-image
+  - name: project-bundle
+  - name: ruby-2.3.1-image
 outputs:
   - name: project-image-tar
 run:

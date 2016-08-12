@@ -4,11 +4,16 @@ resources:
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
-  - name: ruby-image
+  - name: project-bundle
+    type: git
+    source:
+      uri: https://github.com/jamesgoodhouse/Rails5TestApp-bundle
+      branch: master
+  - name: ruby-2.3.1-image
     type: docker-image
     source:
-      repository: ruby
-      tag: "2.3-alpine"
+      repository: jamgood96/ruby
+      tag: "2.3.1"
   - name: project-image
     type: docker-image
     source:
@@ -21,8 +26,12 @@ jobs:
       - aggregate:
         - get: project-code
           trigger: true
-        - get: ruby-image
+        - get: project-bundle
           params: {save: true}
+        - get: ruby-2.3.1-image
+          params: {save: true}
+      - task: bundle-gems
+        file: project-code/ci/tasks/bundle-gems.yml
       - task: build-image
         privileged: true
         file: project-code/ci/tasks/build-image.yml
