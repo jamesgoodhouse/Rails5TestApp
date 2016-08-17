@@ -52,22 +52,22 @@ build_image() {
   docker load -i $RUBY_IMAGE_DIR/image -q
   docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
 
-  # if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
-  #   docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
-  #   pid=$!
-  #   spin='-\|/'
-  #   i=0
-  #   while kill -0 $pid 2>/dev/null; do
-  #     i=$(( (i+1) %4 ))
-  #     printf "\r${spin:$i:1} importing cached image.tar.bz2"
-  #     sleep .1
-  #   done
-  #   printf "\r\e[1;32m√\e[m importing cached image.tar.bz2"
-  #   printf "\n\n"
-  # fi
+  if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
+    docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
+    pid=$!
+    spin='-\|/'
+    i=0
+    while kill -0 $pid 2>/dev/null; do
+      i=$(( (i+1) %4 ))
+      printf "\r${spin:$i:1} importing cached image.tar.bz2"
+      sleep .1
+    done
+    printf "\r\e[1;32m√\e[m importing cached image.tar.bz2"
+    printf "\n\n"
+  fi
 
-  mv $BUNDLE_DIR $PROJECT_CODE/bundle
-  mv $WORK_DIR/assets $PROJECT_CODE/public/assets
+  cp -pPR $BUNDLE_DIR $PROJECT_CODE/bundle
+  cp -pPR $WORK_DIR/assets $PROJECT_CODE/public/assets
 
   cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
 
@@ -87,6 +87,18 @@ build_image() {
     sleep .1
   done
   printf "\r\e[1;32m√\e[m exporting image.tar.bz2"
+
+  printf "\n"
+  docker save jamgood96/rails5testapp:latest | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.smaller.tar.bz2 2>/dev/null &
+  pid=$!
+  spin='-\|/'
+  i=0
+  while kill -0 $pid 2>/dev/null; do
+    i=$(( (i+1) %4 ))
+    printf "\r${spin:$i:1} exporting image.smaller.tar.bz2"
+    sleep .1
+  done
+  printf "\r\e[1;32m√\e[m exporting image.smaller.tar.bz2"
 }
 
 _cleanup_bundle() {
@@ -105,20 +117,20 @@ cleanup() {
   _cleanup_image
 }
 
-# cucumber() {
-#   _start_docker
-#
-#   docker load -i ../project-image-tar/image.tar -q
-#
-#   return 0
-# }
-#
-# rspec() {
-#   _start_docker
-#
-#   docker load -i ../project-image-tar/image.tar -q
-#
-#   docker run --rm jamgood96/rails5testapp bundle exec rspec
-# }
+cucumber() {
+  _start_docker
+
+  time docker load -i $IMAGE_TAR_DIR/image.smaller.tar.bz2 -q
+
+  return 0
+}
+
+rspec() {
+  _start_docker
+
+  time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
+
+  docker run --rm jamgood96/rails5testapp bundle exec rspec
+}
 
 "$@"
