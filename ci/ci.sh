@@ -1,43 +1,38 @@
 #!/bin/sh
 
 WORK_DIR=`pwd`
+
+ASSETS_DIR=$WORK_DIR/assets
 BUILD_CACHE_DIR=$WORK_DIR/build-cache
 BUNDLE_DIR=$WORK_DIR/bundle
-PROJECT_CODE=$WORK_DIR/project-code
-ASSETS_DIR=$WORK_DIR/assets
-IMAGE_TAR_DIR=$WORK_DIR/project-image-tar
+GIT_REPO_DIR=$WORK_DIR/git-repo
+IMAGE_CACHE_DIR=$WORK_DIR/image-cache
 
-bundle_gems() {
-  if [ -f $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 ]; then
-    tar -xjf $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 -C $BUNDLE_DIR 2>/dev/null &
-    pid=$!
-    spin='-\|/'
-    i=0
-    while kill -0 $pid 2>/dev/null; do
-      i=$(( (i+1) %4 ))
-      printf "\r${spin:$i:1} extracting bundle cache"
-      sleep .1
-    done
-    printf "\r\e[1;32m√\e[m extracting bundle cache"
-    printf "\n\n"
-  fi
+IMAGE_REPO=jamgood96/rails5testapp
+IMAGE_TAG=latest
+IMAGE=$IMAGE_REPO:$IMAGE_TAG
 
-  BUNDLE_PATH=$BUNDLE_DIR bundle install --gemfile=$PROJECT_CODE/Gemfile --jobs=4 --clean
-}
+_spinner() {
+  pid=$!; spin='-\|/'; i=0
 
-compile_assets() {
-  cd $PROJECT_CODE && BUNDLE_PATH=$BUNDLE_DIR RAILS_ENV=production ./bin/rails assets:precompile 2>/dev/null &
-  pid=$! # Process Id of the previous running command
-  spin='-\|/'
-  i=0
   while kill -0 $pid 2>/dev/null; do
     i=$(( (i+1) %4 ))
-    printf "\r${spin:$i:1} compiling assets"
+    printf "\r${spin:$i:1} $1"
     sleep .1
   done
-  printf "\r\e[1;32m√\e[m compiling assets"
 
-  cp -pPR $PROJECT_CODE/public/assets/. $ASSETS_DIR
+  printf "\r\e[1;32m√\e[m $1\n\n"
+}
+
+_extract_cache() {
+  if [ -f $BUILD_CACHE_DIR/$1.tar.gz ]; then
+    tar -xzf $BUILD_CACHE_DIR/$1.tar.gz -C $2 2>/dev/null &
+    _spinner "extracting $1 cache"
+  fi
+}
+
+_cache_bundle() {
+  tar -czf $WORK_DIR/bundle-tar/bundle.tar.gz -C $BUNDLE_DIR .
 }
 
 _start_docker() {
@@ -45,80 +40,64 @@ _start_docker() {
   start_docker
 }
 
+_load_image() {
+  gunzip -c $IMAGE_CACHE_DIR/image.tar.gz | docker load &>/dev/null &
+  _spinner "loading cached image from previous build"
+}
+
+_prepare_image() {
+  cp -pPR $BUNDLE_DIR $GIT_REPO_DIR/bundle
+  cp -pPR $ASSETS_DIR $GIT_REPO_DIR/public/assets
+  cp $GIT_REPO_DIR/ci/.dockerignore $GIT_REPO_DIR
+}
+
+_cache_image() {
+  image_ids=$(docker history -q $IMAGE | sed '/^<missing>$/ d')
+  docker save $IMAGE $(echo $image_ids) | gzip -c > $WORK_DIR/image-tar/image.tar.gz 2>/dev/null &
+  printf "\n"
+  _spinner "caching image for later builds"
+}
+
+bundle_gems() {
+  _extract_cache bundle $BUNDLE_DIR
+  BUNDLE_PATH=$BUNDLE_DIR bundle install --gemfile=$GIT_REPO_DIR/Gemfile --clean
+  _cache_bundle
+}
+
+compile_assets() {
+  ln -s $ASSETS_DIR $GIT_REPO_DIR/public/assets && cd $GIT_REPO_DIR
+  regex="s|^.\+\(Writing \)$GIT_REPO_DIR/\(.\+\)$|\1\2|"
+  BUNDLE_PATH=$BUNDLE_DIR RAILS_ENV=production bundle exec rake assets:precompile 2>&1 | sed "$regex"
+  mv $GIT_REPO_DIR/public/assets/* $ASSETS_DIR
+  printf "\e[1;32mAsset compilation complete!\e[m"
+}
+
 build_image() {
   _start_docker
-
-  RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
-  docker load -i $RUBY_IMAGE_DIR/image -q
-  docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
-
-  # if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
-  #   docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
-  #   pid=$!
-  #   spin='-\|/'
-  #   i=0
-  #   while kill -0 $pid 2>/dev/null; do
-  #     i=$(( (i+1) %4 ))
-  #     printf "\r${spin:$i:1} importing cached image.tar.bz2"
-  #     sleep .1
-  #   done
-  #   printf "\r\e[1;32m√\e[m importing cached image.tar.bz2"
-  #   printf "\n\n"
-  # fi
-
-  cp -pPR $BUNDLE_DIR $PROJECT_CODE/bundle
-  cp -pPR $WORK_DIR/assets $PROJECT_CODE/public/assets
-
-  cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
-
-  touch -t 201203101513 $PROJECT_CODE/.rspec
-  docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
-
-  mkdir -p $IMAGE_TAR_DIR
-
-  printf "\n"
-  docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest | sed '/^<missing>$/ d') | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
-  pid=$!
-  spin='-\|/'
-  i=0
-  while kill -0 $pid 2>/dev/null; do
-    i=$(( (i+1) %4 ))
-    printf "\r${spin:$i:1} exporting image.tar.bz2"
-    sleep .1
-  done
-  printf "\r\e[1;32m√\e[m exporting image.tar.bz2"
+  if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
+  _prepare_image
+  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
+  _cache_image
 }
 
-_cleanup_bundle() {
-  mkdir -p $BUILD_CACHE_DIR/bundle
-  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 -C $BUNDLE_DIR .
+rspec() {
+  _start_docker
+  _load_image
+  docker run --rm $IMAGE bundle exec rspec
 }
 
-_cleanup_image() {
-  mkdir -p $BUILD_CACHE_DIR/docker
-  cp $IMAGE_TAR_DIR/image.tar.bz2 $BUILD_CACHE_DIR/docker/image.tar.bz2
+cucumber() {
+  _start_docker
+  _load_image
+  docker run --rm $IMAGE bundle exec rspec
 }
 
-cleanup() {
-  echo CLEANING
-  _cleanup_bundle
-  _cleanup_image
-}
-
-# cucumber() {
-#   _start_docker
-#
-#   docker load -i ../project-image-tar/image.tar -q
-#
-#   return 0
-# }
-#
-# rspec() {
-#   _start_docker
-#
-#   docker load -i ../project-image-tar/image.tar -q
-#
-#   docker run --rm jamgood96/rails5testapp bundle exec rspec
-# }
-
-"$@"
+if [ -n "$(type -t $@)" ] && [ "$(type -t $@)" = $@ ]; then
+  if echo "$@" | grep -q '^_'; then
+    echo not allowed
+  else
+    "$@"
+  fi
+else
+  echo $@ not function
+fi
