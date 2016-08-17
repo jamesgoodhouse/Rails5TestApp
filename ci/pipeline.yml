@@ -11,11 +11,6 @@ resources:
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
-  # - name: project-bundle
-  #   type: git
-  #   source:
-  #     uri: https://github.com/jamesgoodhouse/Rails5TestApp-bundle
-  #     branch: master
 
   - name: ruby-2.3.1-image
     type: docker-image
@@ -30,13 +25,13 @@ resources:
       username: jamgood96
       password: {{docker-hub-password}}
 
-  - name: bundled-gems
+  - name: build-cache
     type: rsync-resource
     source:
-      server: 10.40.1.190
-      port: 2222
-      base_dir: /sync_directory
-      user : root
+      server: 192.168.100.4
+      port: 22
+      base_dir: /home/vagrant/caches
+      user : vagrant
       private_key: {{private_key}}
 
 jobs:
@@ -45,9 +40,14 @@ jobs:
       - aggregate:
         - get: project-code
           trigger: true
-        - get: bundled-gems
+
+        # - get: project-image
+        #   params: {save: true}
+
         - get: ruby-2.3.1-image
           params: {save: true}
+
+        - get: build-cache
 
       - task: bundle-gems
         config:
@@ -58,12 +58,13 @@ jobs:
               repository: jamgood96/ruby
               tag: "2.3.1-dev"
           inputs:
-            - name: bundled-gems
+            - name: build-cache
             - name: project-code
+          outputs:
+            - name: bundle
           run:
-            path: ./project-code/ci/scripts/bundle-gems.sh
-
-      - put: bundled-gems
+            path: ./project-code/ci/ci.sh
+            args: [bundle_gems]
 
       - task: compile-assets
         config:
@@ -74,12 +75,13 @@ jobs:
               repository: jamgood96/ruby
               tag: "2.3.1-dev"
           inputs:
-            - name: bundled-gems
+            - name: bundle
             - name: project-code
-          outputs: [name: compiled-assets]
+          outputs: [name: assets]
           run:
-            dir: project-code
-            path: ./ci/scripts/compile-assets.sh
+            path: pwd
+            # path: ./project-code/ci/ci.sh
+            # args: [compile_assets]
 
       - task: build-image
         privileged: true
@@ -90,45 +92,71 @@ jobs:
             source:
               repository: mumoshu/dcind
           inputs:
-            - name: bundled-gems
-            - name: compiled-assets
+            - name: assets
+            - name: build-cache
+            - name: bundle
             - name: project-code
             - name: ruby-2.3.1-image
           outputs: [name: project-image-tar]
           run:
-            path: ./project-code/ci/scripts/build-image.sh
+            path: ./project-code/ci/ci.sh
+            args: [build_image]
 
-      - aggregate:
-        - task: rspec
-          privileged: true
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: mumoshu/dcind
-            inputs:
-              - name: project-code
-              - name: project-image-tar
-            run:
-              path: project-code/ci/scripts/run-tests-rspec.sh
-        - task: cucumber
-          privileged: true
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: mumoshu/dcind
-            inputs:
-              - name: project-code
-              - name: project-image-tar
-            run:
-              path: project-code/ci/scripts/run-tests-cucumber.sh
-
+      - task: cleanup
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+          inputs:
+            - name: bundle
+            - name: project-code
+            - name: project-image-tar
+          outputs:
+            - name: build-cache
+          run:
+            path: ./project-code/ci/ci.sh
+            args: [cleanup]
+        ensure:
+          put: build-cache
+          params: {sync_dir: build-cache}
+  #
+  #     - aggregate:
+  #       - task: rspec
+  #         privileged: true
+  #         config:
+  #           platform: linux
+  #           image_resource:
+  #             type: docker-image
+  #             source:
+  #               repository: mumoshu/dcind
+  #           inputs:
+  #             - name: project-code
+  #             - name: project-image-tar
+  #           run:
+  #             dir: project-code
+  #             path: ./ci/ci.sh
+  #             args: [rspec]
+  #       - task: cucumber
+  #         privileged: true
+  #         config:
+  #           platform: linux
+  #           image_resource:
+  #             type: docker-image
+  #             source:
+  #               repository: mumoshu/dcind
+  #           inputs:
+  #             - name: project-code
+  #             - name: project-image-tar
+  #           run:
+  #             dir: project-code
+  #             path: ./ci/ci.sh
+  #             args: [cucumber]
+  #
       - put: project-image
         params:
-          load_file: project-image-tar/image.tar
+          load_file: project-image-tar/image.tar.bz2
           load_repository: jamgood96/rails5testapp
           load_tag: latest
   # # - name: things-and-stuff
