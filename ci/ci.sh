@@ -48,7 +48,7 @@ _start_docker() {
 build_image() {
   _start_docker
 
-  docker pull jamgood96/ruby-2.3.1-image
+  docker pull jamgood96/ruby:2.3.1
   # RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
   # docker load -i $RUBY_IMAGE_DIR/image -q
   # docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
