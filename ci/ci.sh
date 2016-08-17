@@ -77,7 +77,7 @@ build_image() {
   mkdir -p $IMAGE_TAR_DIR
 
   printf "\n"
-  docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest | sed '/^<missing>$/ d') | BZIP=--best bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
+  docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest | sed '/^<missing>$/ d') | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
   pid=$!
   spin='-\|/'
   i=0
@@ -91,7 +91,7 @@ build_image() {
 
 _cleanup_bundle() {
   mkdir -p $BUILD_CACHE_DIR/bundle
-  BZIP=--best tar -cjf $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 -C $BUNDLE_DIR .
+  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 -C $BUNDLE_DIR .
 }
 
 _cleanup_image() {
