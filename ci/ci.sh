@@ -73,6 +73,7 @@ build_image() {
 
   cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
 
+  touch -t 201203101513 $PROJECT_CODE/.rspec
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
   mkdir -p $IMAGE_TAR_DIR
