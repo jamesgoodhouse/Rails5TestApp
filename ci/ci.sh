@@ -48,10 +48,9 @@ _start_docker() {
 build_image() {
   _start_docker
 
-  docker pull jamgood96/ruby:2.3.1
-  # RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
-  # docker load -i $RUBY_IMAGE_DIR/image -q
-  # docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
+  RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
+  docker load -i $RUBY_IMAGE_DIR/image -q
+  docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
 
   if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
     docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
@@ -78,7 +77,7 @@ build_image() {
   mkdir -p $IMAGE_TAR_DIR
 
   printf "\n"
-  docker save jamgood96/rails5testapp:latest | bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
+  docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest) | bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
   pid=$!
   spin='-\|/'
   i=0
