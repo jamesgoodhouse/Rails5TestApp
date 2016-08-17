@@ -66,8 +66,8 @@ build_image() {
   #   printf "\n\n"
   # fi
 
-  cp -pPR $BUNDLE_DIR $PROJECT_CODE/bundle
-  cp -pPR $WORK_DIR/assets $PROJECT_CODE/public/assets
+  mv $BUNDLE_DIR $PROJECT_CODE/bundle
+  mv $WORK_DIR/assets $PROJECT_CODE/public/assets
 
   cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
 
