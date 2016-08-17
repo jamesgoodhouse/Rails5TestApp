@@ -49,23 +49,24 @@ build_image() {
   _start_docker
 
   docker pull jamgood96/ruby:2.3.1
+  docker pull jamgood96/rails5testapp:latest
   # RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
   # docker load -i $RUBY_IMAGE_DIR/image -q
   # docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
 
-  if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
-    docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
-    pid=$!
-    spin='-\|/'
-    i=0
-    while kill -0 $pid 2>/dev/null; do
-      i=$(( (i+1) %4 ))
-      printf "\r${spin:$i:1} importing cached image.tar.bz2"
-      sleep .1
-    done
-    printf "\r\e[1;32m√\e[m importing cached image.tar.bz2"
-    printf "\n\n"
-  fi
+  # if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
+  #   docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
+  #   pid=$!
+  #   spin='-\|/'
+  #   i=0
+  #   while kill -0 $pid 2>/dev/null; do
+  #     i=$(( (i+1) %4 ))
+  #     printf "\r${spin:$i:1} importing cached image.tar.bz2"
+  #     sleep .1
+  #   done
+  #   printf "\r\e[1;32m√\e[m importing cached image.tar.bz2"
+  #   printf "\n\n"
+  # fi
 
   cp -pPR $BUNDLE_DIR $PROJECT_CODE/bundle
   cp -pPR $WORK_DIR/assets $PROJECT_CODE/public/assets
