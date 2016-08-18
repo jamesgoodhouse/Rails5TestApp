@@ -41,6 +41,8 @@ compile_assets() {
 }
 
 _start_docker() {
+  rm -rf /var/lib/docker
+  cp -pPR $WORK_DIR/docker /var/lib/docker
   . /docker-lib.sh
   start_docker
 }
