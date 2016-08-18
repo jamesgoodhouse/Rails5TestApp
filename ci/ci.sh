@@ -146,6 +146,7 @@ cucumber() {
 }
 
 rspec() {
+  echo '!!!!!!!!!!!!!!!!!!!!!!!!!!'
   apk add btrfs-progs
 
   cp -pPR $WORK_DIR/docker /var/lib/docker
@@ -156,7 +157,7 @@ rspec() {
     btrfs property set -ts /var/lib/docker/btrfs/subvolumes/$f ro false
   done
 
-  _start_docker
+  # _start_docker
   #
   # time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
   #
