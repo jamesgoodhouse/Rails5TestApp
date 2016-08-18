@@ -75,6 +75,8 @@ build_image() {
 
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
+  cp -pPR /var/lib/docker $WORK_DIR/docker
+
   # mkdir -p $IMAGE_TAR_DIR
 
   # printf "\n"
