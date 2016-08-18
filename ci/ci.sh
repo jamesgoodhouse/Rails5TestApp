@@ -114,15 +114,17 @@ _cleanup_bundle() {
   BZIP=--fast tar -cjf $BUILD_CACHE_DIR/bundle/rubygems.tar.bz2 -C $BUNDLE_DIR .
 }
 
-_cleanup_image() {
+_cleanup_docker() {
   mkdir -p $BUILD_CACHE_DIR/docker
-  cp $IMAGE_TAR_DIR/image.tar.bz2 $BUILD_CACHE_DIR/docker/image.tar.bz2
+  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/docker/subvolumes.tar.bz2 -C $WORK_DIR/docker/subvolumes .
+  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/docker/var.tar.bz2 -C $WORK_DIR/docker/var .
+  # cp $IMAGE_TAR_DIR/image.tar.bz2 $BUILD_CACHE_DIR/docker/image.tar.bz2
 }
 
 cleanup() {
   echo CLEANING
   _cleanup_bundle
-  _cleanup_image
+  _cleanup_docker
 }
 
 cucumber() {
