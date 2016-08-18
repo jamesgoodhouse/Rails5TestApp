@@ -147,7 +147,15 @@ cucumber() {
 }
 
 rspec() {
-  echo `pwd`
+  apk add btrfs-progs
+
+  mkdir -p /var/lib/docker/btrfs/subvolumes
+  cd $WORK_DIR/docker/btrfs/subvolumes
+  for f in *
+  do
+    echo $f
+    btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
+  done
   # _start_docker
   #
   # time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
