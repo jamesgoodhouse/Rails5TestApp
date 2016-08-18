@@ -75,9 +75,16 @@ build_image() {
 
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
-  # stop_docker
+  cp -pPR /var/lib/docker/* $WORK_DIR/docker
+  rm -rf $WORK_DIR/docker/btrfs/subvolumes/*
 
-  # mv /var/lib/docker $WORK_DIR/docker/
+  apk add btrfs-progs
+
+  DOCKER_VAR_DIR="/var/lib/docker/btrfs/subvolumes/*"
+  for f in $DOCKER_VAR_DIR
+  do
+    btrfs subvolume snapshot $DOCKER_VAR_DIR/$f $WORK_DIR/docker/btrfs/subvolumes/$f
+  done
 
   # mkdir -p $IMAGE_TAR_DIR
 
@@ -131,11 +138,12 @@ cucumber() {
 }
 
 rspec() {
-  _start_docker
-
-  time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
-
-  docker run --rm jamgood96/rails5testapp bundle exec rspec
+  echo `pwd`
+  # _start_docker
+  #
+  # time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
+  #
+  # docker run --rm jamgood96/rails5testapp bundle exec rspec
 }
 
 "$@"
