@@ -75,25 +75,23 @@ build_image() {
 
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
-  cp -pPR /var/lib/docker/* $WORK_DIR/docker
-  rm -rf $WORK_DIR/docker/btrfs/subvolumes/*
-
   apk add btrfs-progs
-
-  mkdir -p /tmp/subvolumes
   cd /var/lib/docker/btrfs/subvolumes
   for f in *
   do
-    echo $f
     btrfs subvolume snapshot -r $f /tmp/subvolumes/$f
+    btrfs subvolume delete $f
+    btrfs send -f $WORK_DIR/subvolumes/$f /tmp/subvolumes/$f
   done
 
-  cd /tmp/subvolumes
-  for f in *
-  do
-    echo $f
-    btrfs send -f $WORK_DIR/docker/btrfs/subvolumes/$f $f
-  done
+  cp -pPR /var/lib/docker/* $WORK_DIR/docker
+
+  # cd /tmp/subvolumes
+  # for f in *
+  # do
+  #   echo $f
+  #   btrfs send -f $WORK_DIR/docker/btrfs/subvolumes/$f $f
+  # done
 
   # mkdir -p $IMAGE_TAR_DIR
 
@@ -149,18 +147,18 @@ cucumber() {
 rspec() {
   apk add btrfs-progs
 
-  mkdir -p /var/lib/docker/btrfs/subvolumes
-  cd $WORK_DIR/docker/btrfs/subvolumes
+  cp -pPR $WORK_DIR/docker /var/lib/docker
+  cd $WORK_DIR/subvolumes
   for f in *
   do
-    echo $f
     btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
   done
-  # _start_docker
+
+  _start_docker
   #
   # time docker load -i $IMAGE_TAR_DIR/image.tar.bz2 -q
   #
-  # docker run --rm jamgood96/rails5testapp bundle exec rspec
+  docker run --rm jamgood96/rails5testapp bundle exec rspec
 }
 
 "$@"
