@@ -81,11 +81,11 @@ build_image() {
   for f in *
   do
     btrfs subvolume snapshot -r $f /tmp/subvolumes/$f
-    btrfs subvolume delete $f
     btrfs send -f $WORK_DIR/subvolumes/$f /tmp/subvolumes/$f
   done
 
   cp -pPR /var/lib/docker/* $WORK_DIR/docker
+  rm -rf $WORK_DIR/docker/btrfs/subvolumes/*
 
   # cd /tmp/subvolumes
   # for f in *
