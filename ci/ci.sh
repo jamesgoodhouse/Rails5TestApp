@@ -76,6 +76,7 @@ build_image() {
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
   apk add btrfs-progs
+  mkdir /tmp/subvolumes
   cd /var/lib/docker/btrfs/subvolumes
   for f in *
   do
