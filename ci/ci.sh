@@ -83,7 +83,7 @@ build_image() {
   DOCKER_VAR_DIR="/var/lib/docker/btrfs/subvolumes/*"
   for f in $DOCKER_VAR_DIR
   do
-    btrfs subvolume snapshot $DOCKER_VAR_DIR/$f $WORK_DIR/docker/btrfs/subvolumes/$f
+    btrfs subvolume snapshot $f $WORK_DIR/docker/btrfs/subvolumes/$f
   done
 
   # mkdir -p $IMAGE_TAR_DIR
