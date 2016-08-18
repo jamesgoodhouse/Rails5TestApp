@@ -92,7 +92,7 @@ build_image() {
   for f in *
   do
     echo $f
-    btrfs subvolume send -f $WORK_DIR/docker/btrfs/subvolumes/$f $f
+    btrfs send -f $WORK_DIR/docker/btrfs/subvolumes/$f $f
   done
 
   # mkdir -p $IMAGE_TAR_DIR
