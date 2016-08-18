@@ -46,6 +46,18 @@ _start_docker() {
 }
 
 build_image() {
+  if [ -f $BUILD_CACHE_DIR/docker/docker.tar.bz2 ]; then
+    tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2
+  fi
+
+  # cp -pPR $WORK_DIR/docker/var /var/lib/docker
+  # cd $WORK_DIR/docker/subvolumes
+  # for f in *
+  # do
+  #   btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
+  #   btrfs property set -ts /var/lib/docker/btrfs/subvolumes/$f ro false
+  # done
+
   _start_docker
 
   # RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
@@ -116,8 +128,7 @@ _cleanup_bundle() {
 
 _cleanup_docker() {
   mkdir -p $BUILD_CACHE_DIR/docker
-  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/docker/subvolumes.tar.bz2 -C $WORK_DIR/docker/subvolumes .
-  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/docker/var.tar.bz2 -C $WORK_DIR/docker/var .
+  BZIP=--fast tar -cjf $BUILD_CACHE_DIR/docker/docker.tar.bz2 -C $WORK_DIR/docker .
   # cp $IMAGE_TAR_DIR/image.tar.bz2 $BUILD_CACHE_DIR/docker/image.tar.bz2
 }
 
