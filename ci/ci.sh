@@ -50,6 +50,7 @@ build_image() {
     tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2 -C $WORK_DIR/docker
   fi
 
+  apk add btrfs-progs
   cp -pPR $WORK_DIR/docker/var /var/lib/docker
   cd $WORK_DIR/docker/subvolumes
   for f in *
