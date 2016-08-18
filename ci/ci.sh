@@ -80,12 +80,19 @@ build_image() {
 
   apk add btrfs-progs
 
+  mkdir -p /tmp/subvolumes
   cd /var/lib/docker/btrfs/subvolumes
   for f in *
   do
     echo $f
-    echo $WORK_DIR/docker/btrfs/subvolumes/$f
-    btrfs subvolume snapshot $f $WORK_DIR/docker/btrfs/subvolumes$f
+    btrfs subvolume snapshot -r $f /tmp/subvolumes/$f
+  done
+
+  cd /tmp/subvolumes
+  for f in *
+  do
+    echo $f
+    btrfs subvolume send -f $WORK_DIR/docker/btrfs/subvolumes/$f $f
   done
 
   # mkdir -p $IMAGE_TAR_DIR
