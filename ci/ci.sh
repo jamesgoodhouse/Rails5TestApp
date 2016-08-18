@@ -47,16 +47,16 @@ _start_docker() {
 
 build_image() {
   if [ -f $BUILD_CACHE_DIR/docker/docker.tar.bz2 ]; then
-    tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2
+    tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2 -C $WORK_DIR/docker
   fi
 
-  # cp -pPR $WORK_DIR/docker/var /var/lib/docker
-  # cd $WORK_DIR/docker/subvolumes
-  # for f in *
-  # do
-  #   btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
-  #   btrfs property set -ts /var/lib/docker/btrfs/subvolumes/$f ro false
-  # done
+  cp -pPR $WORK_DIR/docker/var /var/lib/docker
+  cd $WORK_DIR/docker/subvolumes
+  for f in *
+  do
+    btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
+    btrfs property set -ts /var/lib/docker/btrfs/subvolumes/$f ro false
+  done
 
   _start_docker
 
