@@ -80,11 +80,11 @@ build_image() {
 
   apk add btrfs-progs
 
-  DOCKER_VAR_DIR="/var/lib/docker/btrfs/subvolumes/*"
-  for f in $DOCKER_VAR_DIR
+  cd /var/lib/docker/btrfs/subvolumes
+  for f in *
   do
     echo $f
-    echo $WORK_DIR/docker/btrfs/subvolumes$f
+    echo $WORK_DIR/docker/btrfs/subvolumes/$f
     btrfs subvolume snapshot $f $WORK_DIR/docker/btrfs/subvolumes$f
   done
 
