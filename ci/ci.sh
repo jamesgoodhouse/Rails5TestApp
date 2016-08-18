@@ -153,6 +153,7 @@ rspec() {
   for f in *
   do
     btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
+    btrfs property set -ts /var/lib/docker/btrfs/subvolumes/$f ro false
   done
 
   _start_docker
