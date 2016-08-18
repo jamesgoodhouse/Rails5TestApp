@@ -47,12 +47,12 @@ _start_docker() {
 
 build_image() {
   if [ -f $BUILD_CACHE_DIR/docker/docker.tar.bz2 ]; then
-    tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2 -C $WORK_DIR/docker
+    tar -xjf $BUILD_CACHE_DIR/docker/docker.tar.bz2
   fi
 
   apk add btrfs-progs
-  cp -pPR $WORK_DIR/docker/var /var/lib/docker
-  cd $WORK_DIR/docker/subvolumes
+  cp -pPR $BUILD_CACHE_DIR/docker/var /var/lib/docker
+  cd $BUILD_CACHE_DIR/docker/subvolumes
   for f in *
   do
     btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
@@ -85,6 +85,8 @@ build_image() {
   cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
 
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
+
+  stop_docker
 
   apk add btrfs-progs
   mkdir /tmp/subvolumes
