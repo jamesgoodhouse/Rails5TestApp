@@ -47,7 +47,7 @@ _start_docker() {
 
 build_image() {
   if [ -f $BUILD_CACHE_DIR/docker/docker.tar.bz2 ]; then
-    tar -xjvf $BUILD_CACHE_DIR/docker/docker.tar.bz2
+    tar -xjvf $BUILD_CACHE_DIR/docker/docker.tar.bz2 -C $BUILD_CACHE_DIR/docker
     echo `ls -la`
 
     apk add btrfs-progs
