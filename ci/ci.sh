@@ -71,34 +71,33 @@ build_image() {
 
   cp $PROJECT_CODE/ci/.dockerignore $PROJECT_CODE
 
-  touch -t 201203101513 $PROJECT_CODE/.rspec
   docker build -f $PROJECT_CODE/ci/Dockerfile -t jamgood96/rails5testapp:latest $PROJECT_CODE
 
-  mkdir -p $IMAGE_TAR_DIR
+  # mkdir -p $IMAGE_TAR_DIR
 
-  printf "\n"
-  docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest | sed '/^<missing>$/ d') | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
-  pid=$!
-  spin='-\|/'
-  i=0
-  while kill -0 $pid 2>/dev/null; do
-    i=$(( (i+1) %4 ))
-    printf "\r${spin:$i:1} exporting image.tar.bz2"
-    sleep .1
-  done
-  printf "\r\e[1;32m√\e[m exporting image.tar.bz2"
-
-  printf "\n"
-  docker save jamgood96/rails5testapp:latest | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.smaller.tar.bz2 2>/dev/null &
-  pid=$!
-  spin='-\|/'
-  i=0
-  while kill -0 $pid 2>/dev/null; do
-    i=$(( (i+1) %4 ))
-    printf "\r${spin:$i:1} exporting image.smaller.tar.bz2"
-    sleep .1
-  done
-  printf "\r\e[1;32m√\e[m exporting image.smaller.tar.bz2"
+  # printf "\n"
+  # docker save jamgood96/rails5testapp:latest $(docker history -q jamgood96/rails5testapp:latest | sed '/^<missing>$/ d') | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.tar.bz2 2>/dev/null &
+  # pid=$!
+  # spin='-\|/'
+  # i=0
+  # while kill -0 $pid 2>/dev/null; do
+  #   i=$(( (i+1) %4 ))
+  #   printf "\r${spin:$i:1} exporting image.tar.bz2"
+  #   sleep .1
+  # done
+  # printf "\r\e[1;32m√\e[m exporting image.tar.bz2"
+  #
+  # printf "\n"
+  # docker save jamgood96/rails5testapp:latest | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.smaller.tar.bz2 2>/dev/null &
+  # pid=$!
+  # spin='-\|/'
+  # i=0
+  # while kill -0 $pid 2>/dev/null; do
+  #   i=$(( (i+1) %4 ))
+  #   printf "\r${spin:$i:1} exporting image.smaller.tar.bz2"
+  #   sleep .1
+  # done
+  # printf "\r\e[1;32m√\e[m exporting image.smaller.tar.bz2"
 }
 
 _cleanup_bundle() {
