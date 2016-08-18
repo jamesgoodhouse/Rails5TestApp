@@ -48,9 +48,9 @@ _start_docker() {
 build_image() {
   _start_docker
 
-  RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
-  docker load -i $RUBY_IMAGE_DIR/image -q
-  docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
+  # RUBY_IMAGE_DIR=$WORK_DIR/ruby-2.3.1-image
+  # docker load -i $RUBY_IMAGE_DIR/image -q
+  # docker tag "$(cat $RUBY_IMAGE_DIR/image-id)" "$(cat $RUBY_IMAGE_DIR/repository):$(cat $RUBY_IMAGE_DIR/tag)"
 
   # if [ -f $BUILD_CACHE_DIR/docker/image.tar.bz2 ]; then
   #   docker load -i $BUILD_CACHE_DIR/docker/image.tar.bz2 -q 2>/dev/null &
@@ -75,15 +75,17 @@ build_image() {
 
   apk add btrfs-progs
   mkdir /tmp/subvolumes
+  mkdir $WORK_DIR/docker/subvolumes
   cd /var/lib/docker/btrfs/subvolumes
   for f in *
   do
     btrfs subvolume snapshot -r $f /tmp/subvolumes/$f
-    btrfs send -f $WORK_DIR/subvolumes/$f /tmp/subvolumes/$f
+    btrfs send -f $WORK_DIR/docker/subvolumes/$f /tmp/subvolumes/$f
   done
 
-  cp -pPR /var/lib/docker/* $WORK_DIR/docker
-  rm -rf $WORK_DIR/docker/btrfs/subvolumes/*
+  mkdir -p $WORK_DIR/docker/var
+  cp -pPR /var/lib/docker/* $WORK_DIR/docker/var
+  rm -rf $WORK_DIR/docker/var/btrfs/subvolumes/*
 
   # cd /tmp/subvolumes
   # for f in *
@@ -105,18 +107,6 @@ build_image() {
   #   sleep .1
   # done
   # printf "\r\e[1;32m√\e[m exporting image.tar.bz2"
-  #
-  # printf "\n"
-  # docker save jamgood96/rails5testapp:latest | BZIP=--fast bzip2 - > $IMAGE_TAR_DIR/image.smaller.tar.bz2 2>/dev/null &
-  # pid=$!
-  # spin='-\|/'
-  # i=0
-  # while kill -0 $pid 2>/dev/null; do
-  #   i=$(( (i+1) %4 ))
-  #   printf "\r${spin:$i:1} exporting image.smaller.tar.bz2"
-  #   sleep .1
-  # done
-  # printf "\r\e[1;32m√\e[m exporting image.smaller.tar.bz2"
 }
 
 _cleanup_bundle() {
@@ -146,8 +136,8 @@ cucumber() {
 rspec() {
   apk add btrfs-progs
 
-  cp -pPR $WORK_DIR/docker /var/lib/docker
-  cd $WORK_DIR/subvolumes
+  cp -pPR $WORK_DIR/docker/var /var/lib/docker
+  cd $WORK_DIR/docker/subvolumes
   for f in *
   do
     btrfs receive -f $f /var/lib/docker/btrfs/subvolumes/
