@@ -11,12 +11,12 @@ resources:
     source:
       uri: https://github.com/jamesgoodhouse/Rails5TestApp
       branch: master
-
-  - name: ruby-2.3.1-image
-    type: docker-image
-    source:
-      repository: jamgood96/ruby
-      tag: "2.3.1"
+  #
+  # - name: ruby-2.3.1-image
+  #   type: docker-image
+  #   source:
+  #     repository: jamgood96/ruby
+  #     tag: "2.3.1"
 
   - name: project-image
     type: docker-image
@@ -44,8 +44,8 @@ jobs:
         # - get: project-image
         #   params: {save: true}
 
-        - get: ruby-2.3.1-image
-          params: {save: true}
+        # - get: ruby-2.3.1-image
+        #   params: {save: true}
 
         - get: build-cache
 
@@ -96,12 +96,50 @@ jobs:
             - name: build-cache
             - name: bundle
             - name: project-code
-            - name: ruby-2.3.1-image
-          outputs: [name: project-image-tar]
+            # - name: ruby-2.3.1-image
+          outputs:
+            - name: docker
+            # - name: project-image-tar
+            # - name: project-image-dump
           run:
             path: ./project-code/ci/ci.sh
             args: [build_image]
 
+      # - aggregate:
+      - task: rspec
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: mumoshu/dcind
+          inputs:
+            - name: project-code
+            - name: docker
+            # - name: project-image-dump
+            # - name: project-image-tar
+          run:
+            path: ./project-code/ci/ci.sh
+            args: [rspec]
+      # - task: cucumber
+      #   privileged: true
+      #   config:
+      #     platform: linux
+      #     image_resource:
+      #       type: docker-image
+      #       source:
+      #         repository: mumoshu/dcind
+      #     inputs:
+      #       - name: project-code
+      #       - name: docker
+      #         path: /var/lib/docker
+      #       # - name: project-image-dump
+      #       # - name: project-image-tar
+      #     run:
+      #       path: ./project-code/ci/ci.sh
+      #       args: [cucumber]
+      #
       - task: cleanup
         config:
           platform: linux
@@ -111,8 +149,8 @@ jobs:
               repository: alpine
           inputs:
             - name: bundle
+            - name: docker
             - name: project-code
-            - name: project-image-tar
           outputs:
             - name: build-cache
           run:
@@ -121,44 +159,12 @@ jobs:
         ensure:
           put: build-cache
           params: {sync_dir: build-cache}
-  #
-  #     - aggregate:
-  #       - task: rspec
-  #         privileged: true
-  #         config:
-  #           platform: linux
-  #           image_resource:
-  #             type: docker-image
-  #             source:
-  #               repository: mumoshu/dcind
-  #           inputs:
-  #             - name: project-code
-  #             - name: project-image-tar
-  #           run:
-  #             dir: project-code
-  #             path: ./ci/ci.sh
-  #             args: [rspec]
-  #       - task: cucumber
-  #         privileged: true
-  #         config:
-  #           platform: linux
-  #           image_resource:
-  #             type: docker-image
-  #             source:
-  #               repository: mumoshu/dcind
-  #           inputs:
-  #             - name: project-code
-  #             - name: project-image-tar
-  #           run:
-  #             dir: project-code
-  #             path: ./ci/ci.sh
-  #             args: [cucumber]
-  #
-      - put: project-image
-        params:
-          load_file: project-image-tar/image.tar.bz2
-          load_repository: jamgood96/rails5testapp
-          load_tag: latest
+      #
+      # - put: project-image
+      #   params:
+      #     load_file: project-image-tar/image.tar.bz2
+      #     load_repository: jamgood96/rails5testapp
+      #     load_tag: latest
   # # - name: things-and-stuff
   # #   plan:
   # #     - get: project-image
