@@ -92,7 +92,8 @@ cucumber() {
   docker run --rm $IMAGE bundle exec rspec
 }
 
-if [ -n "$(type -t $@)" ] && [ "$(type -t $@)" = $@ ]; then
+regex="^$@ is a \(shell \)\?function$"
+if [ -n "$(type -t $@)" ] && echo "$(type $@)" | grep -q $regex; then
   if echo "$@" | grep -q '^_'; then
     echo not allowed
   else
