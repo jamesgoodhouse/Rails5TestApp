@@ -1,4 +1,4 @@
-FROM jamgood96/ruby:2.3.1
+FROM registry.docker-playground.pdx.renewfund.com/ruby:2.3.1-alpine
 
 WORKDIR /app
 
