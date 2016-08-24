@@ -37,7 +37,7 @@ _cache_bundle() {
 
 _start_docker() {
   . /docker-lib.sh
-  start_docker registry.docker-playground.pdx.renewfund.com
+  start_docker "registry.docker-playground.pdx.renewfund.com:80"
 }
 
 _load_image() {
