@@ -93,7 +93,7 @@ cucumber() {
 }
 
 regex="^$@ is a \(shell \)\?function$"
-if [ -n "$(type -t $@)" ] && echo "$(type $@)" | grep -q $regex; then
+if [ -n "$(type -t $@)" ] && echo "$(type $@)" | grep -q "$regex"; then
   if echo "$@" | grep -q '^_'; then
     echo not allowed
   else
