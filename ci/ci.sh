@@ -37,7 +37,7 @@ _cache_bundle() {
 
 _start_docker() {
   . /docker-lib.sh
-  start_docker
+  start_docker registry.docker-playground.pdx.renewfund.com
 }
 
 _load_image() {
