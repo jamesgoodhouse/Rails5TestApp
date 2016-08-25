@@ -49,7 +49,8 @@ _prepare_image() {
   cp -pPR $BUNDLE_DIR $GIT_REPO_DIR/bundle
   cp -pPR $ASSETS_DIR $GIT_REPO_DIR/public/assets
   cp $GIT_REPO_DIR/ci/.dockerignore $GIT_REPO_DIR
-  cd $GIT_REPO_DIR && ./ci/git-timestamp.sh && cd $WORK_DIR
+  cp $GIT_REPO_DIR/ci/git-timestamp.sh
+  cd $GIT_REPO_DIR && ./git-timestamp.sh && rm git-timestamp.sh && cd $WORK_DIR
 }
 
 _cache_image() {
