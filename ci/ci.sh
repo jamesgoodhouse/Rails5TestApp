@@ -8,7 +8,8 @@ BUNDLE_DIR=$WORK_DIR/bundle
 GIT_REPO_DIR=$WORK_DIR/git-repo
 IMAGE_CACHE_DIR=$WORK_DIR/image-cache
 
-IMAGE_REPO=registry.docker-playground.pdx.renewfund.com:80/rails5testapp
+REGISTRY=registry.docker-playground.pdx.renewfund.com:80
+IMAGE_REPO=$REGISTRY/rails5testapp
 IMAGE_TAG=latest
 IMAGE=$IMAGE_REPO:$IMAGE_TAG
 
@@ -37,7 +38,7 @@ _cache_bundle() {
 
 _start_docker() {
   . /docker-lib.sh
-  start_docker "registry.docker-playground.pdx.renewfund.com:80"
+  start_docker $REGISTRY
 }
 
 _load_image() {
