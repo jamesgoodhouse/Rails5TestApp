@@ -8,7 +8,7 @@ BUNDLE_DIR=$WORK_DIR/bundle
 GIT_REPO_DIR=$WORK_DIR/git-repo
 IMAGE_CACHE_DIR=$WORK_DIR/image-cache
 
-IMAGE_REPO=jamgood96/rails5testapp
+IMAGE_REPO=registry.docker-playground.pdx.renewfund.com:80/rails5testapp
 IMAGE_TAG=latest
 IMAGE=$IMAGE_REPO:$IMAGE_TAG
 
@@ -74,6 +74,7 @@ compile_assets() {
 
 build_image() {
   _start_docker
+  docker pull 
   if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
   _prepare_image
   docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
