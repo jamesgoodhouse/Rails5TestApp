@@ -49,8 +49,12 @@ _prepare_image() {
   cp -pPR $BUNDLE_DIR $GIT_REPO_DIR/bundle
   cp -pPR $ASSETS_DIR $GIT_REPO_DIR/public/assets
   cp $GIT_REPO_DIR/ci/.dockerignore $GIT_REPO_DIR
-  cp $GIT_REPO_DIR/ci/git-timestamp.sh $GIT_REPO_DIR
-  cd $GIT_REPO_DIR && ./git-timestamp.sh && rm git-timestamp.sh && cd $WORK_DIR
+  cp $GIT_REPO_DIR/.git/refs/heads/master $GIT_REPO_DIR/REVISION
+}
+
+_build_image() {
+  echo `cat $GIT_REPO_DIR/REVISION | cut -c1-7`
+  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
 }
 
 _cache_image() {
@@ -78,7 +82,7 @@ build_image() {
   _start_docker
   if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
   _prepare_image
-  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
+  _build_image
   _cache_image
 }
 

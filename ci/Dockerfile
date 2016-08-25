@@ -4,5 +4,3 @@ WORKDIR /app
 
 ADD bundle /app/bundle
 ADD . /app
-
-ENV BUNDLE_PATH=/app/bundle
