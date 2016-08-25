@@ -80,12 +80,12 @@ compile_assets() {
 }
 
 build_image() {
-  _start_docker
-  docker load -i $WORK_DIR/image/image
-  if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
-  _prepare_image
-  _build_image
-  _cache_image
+  return 1
+  # _start_docker
+  # if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
+  # _prepare_image
+  # _build_image
+  # _cache_image
 }
 
 rspec() {
