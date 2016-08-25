@@ -46,8 +46,8 @@ _load_image() {
 }
 
 _prepare_image() {
-  cp -pPR $BUNDLE_DIR/* $GIT_REPO_DIR/bundle
-  cp -pPR $ASSETS_DIR/* $GIT_REPO_DIR/public/assets
+  cp -pPR $BUNDLE_DIR $GIT_REPO_DIR/bundle
+  cp -pPR $ASSETS_DIR $GIT_REPO_DIR/public/assets
   cp $GIT_REPO_DIR/ci/.dockerignore $GIT_REPO_DIR
 }
 
@@ -75,8 +75,9 @@ compile_assets() {
 build_image() {
   _start_docker
   if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
-  _prepare_image
-  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
+  docker pull $IMAGE
+  # _prepare_image
+  # docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
   _cache_image
 }
 
