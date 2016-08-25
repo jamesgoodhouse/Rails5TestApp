@@ -74,11 +74,9 @@ compile_assets() {
 
 build_image() {
   _start_docker
-  echo 'pulling'
-  docker pull $IMAGE
-  # if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
-  # _prepare_image
-  # docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
+  if [ -f $IMAGE_CACHE_DIR/image.tar.gz ]; then _load_image; fi
+  _prepare_image
+  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
   _cache_image
 }
 
