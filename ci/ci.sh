@@ -55,12 +55,12 @@ _prepare_image() {
 
 _build_image() {
   echo `cat $GIT_REPO_DIR/REVISION | cut -c1-7`
-  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE $GIT_REPO_DIR
+  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE --pull=true  $GIT_REPO_DIR
 }
 
 _cache_image() {
-  image_ids=$(docker history -q $IMAGE | sed '/^<missing>$/ d')
-  docker save $IMAGE $(echo $image_ids) | gzip -c > $WORK_DIR/image-tar/image.tar.gz 2>/dev/null &
+  image_ids=$(docker history -q $IMAGE | grep -v '<missing>')
+  docker save $IMAGE $(echo $image_ids) | gzip > $WORK_DIR/image-tar/image.tar.gz 2>/dev/null &
   printf "\n"
   _spinner "caching image for later builds"
 }
