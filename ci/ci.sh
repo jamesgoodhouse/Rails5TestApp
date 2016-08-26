@@ -55,7 +55,7 @@ _prepare_image() {
 
 _build_image() {
   echo `cat $GIT_REPO_DIR/REVISION | cut -c1-7`
-  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE --pull=true  $GIT_REPO_DIR
+  docker build -f $GIT_REPO_DIR/ci/Dockerfile -t $IMAGE --pull=true $GIT_REPO_DIR
 }
 
 _cache_image() {
