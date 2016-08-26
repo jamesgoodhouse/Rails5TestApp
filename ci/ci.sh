@@ -37,7 +37,7 @@ _cache_bundle() {
 }
 
 _start_docker() {
-  . /docker-lib.sh
+  source /docker-lib.sh
   start_docker $REGISTRY
 }
 
